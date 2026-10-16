@@ -8,7 +8,11 @@ Lab assignments for the MIPT course "Introduction to parallelization of algorith
 
 ## Git workflow
 
-Never commit to `master`. For every task: create a new branch off `master`, commit, `git push -u origin <branch>`, then open a PR with `gh pr create --base master`.
+Never commit to `master`. For every task: create a new branch, commit, `git push -u origin <branch>`, then open a PR with `gh pr create`. Related PRs form a stack: if the work depends on an unmerged branch, branch from that branch and open the PR with `--base <parent-branch>` instead of `master`, so that each PR shows only its own commits.
+
+## Plots
+
+Plots are built in a Jupyter notebook per lab (`lab_N/plots.ipynb`). The notebook reads `lab_N/results/*.csv`, also saves PNGs there for the README, and is committed with its outputs. Use the repo-root venv: `python3 -m venv .venv && .venv/bin/pip install jupyter matplotlib pandas`. Re-run with `.venv/bin/jupyter nbconvert --to notebook --execute --inplace lab_N/plots.ipynb`.
 
 ## Code style
 
