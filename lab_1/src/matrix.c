@@ -6,7 +6,6 @@
 
 float *matrix_alloc(size_t n) {
     size_t bytes = n * n * sizeof(float);
-    /* aligned_alloc requires the size to be a multiple of the alignment. */
     bytes = (bytes + MATRIX_ALIGN - 1) / MATRIX_ALIGN * MATRIX_ALIGN;
     return aligned_alloc(MATRIX_ALIGN, bytes ? bytes : MATRIX_ALIGN);
 }
@@ -18,8 +17,8 @@ void matrix_fill_value(size_t n, float *m, float value) {
         m[i] = value;
 }
 
-/* Deterministic values in [0, 1): non-negative so sums don't cancel and the
- * relative-error comparison stays meaningful. */
+/* Values in [0, 1) so that sums do not cancel and relative error stays
+ * meaningful. */
 void matrix_fill_random(size_t n, float *m, unsigned seed) {
     uint32_t state = seed * 2654435761u + 1u;
     for (size_t i = 0; i < n * n; ++i) {

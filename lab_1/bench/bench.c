@@ -1,11 +1,6 @@
-/* Times matmul variants and prints CSV to stdout:
- *   variant,n,threads,reps,min_s,mean_s,gflops
- * gflops is computed from min_s with the classical 2*n^3 operation count.
- *
- * Usage: bench [-v variant]... [-r reps] [n ...]
- *   -v  run only the named variant (repeatable; default: all)
- *   -r  repetitions per (variant, n) (default: 5)
- *   n   matrix sizes (default: powers of two 64 .. 4096) */
+/* Usage: bench [-v variant]... [-r reps] [n ...]
+ * Defaults: all variants, 5 reps, sizes 64 to 4096. gflops uses min_s and
+ * 2 * n^3 operations. */
 #include <omp.h>
 #include <stdio.h>
 #include <stdlib.h>

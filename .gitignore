@@ -3,3 +3,4 @@ build*/
 *.csv
 .DS_Store
 *.pdf
+compile_commands.json

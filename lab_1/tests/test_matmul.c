@@ -1,8 +1,4 @@
-/* Correctness check for every registered variant.
- *   1. All-ones inputs: every element of C must equal n exactly.
- *   2. Random inputs: C must match the reference (first registry entry)
- *      within a relative tolerance (summation order differs between variants).
- * Usage: test_matmul [variant ...]   (default: all variants) */
+/* Usage: test_matmul [variant ...] */
 #include <stdio.h>
 #include <string.h>
 
