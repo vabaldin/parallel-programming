@@ -7,6 +7,10 @@ const struct matmul_variant matmul_variants[] = {
     {"transposed", matmul_transposed},
     {"blocked", matmul_blocked},
     {"strassen", matmul_strassen},
+    {"blocked_omp", matmul_blocked_omp},
+    {"simd", matmul_simd},
+    {"simd_omp", matmul_simd_omp},
+    {"best", matmul_best},
 };
 
 const size_t matmul_variants_count =

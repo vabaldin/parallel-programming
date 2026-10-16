@@ -43,3 +43,12 @@ void gemm_blocked(size_t n, const float *a, size_t lda, const float *b,
 void matmul_blocked(size_t n, const float *a, const float *b, float *c) {
     gemm_blocked(n, a, n, b, n, c, n);
 }
+
+/* Each thread owns whole block rows of C, so threads share a cache line of C
+ * only at the boundary of two block rows. */
+void matmul_blocked_omp(size_t n, const float *a, const float *b, float *c) {
+    size_t nblocks = (n + BLOCK - 1) / BLOCK;
+#pragma omp parallel for schedule(dynamic, 1)
+    for (size_t bi = 0; bi < nblocks; ++bi)
+        block_row(n, bi * BLOCK, a, n, b, n, c, n);
+}

@@ -4,6 +4,8 @@ add_library(matmul STATIC
   src/transposed.c
   src/blocked.c
   src/strassen.c
+  src/simd.c
+  src/best.c
   src/variants.c
 )
 target_include_directories(matmul PUBLIC include)
