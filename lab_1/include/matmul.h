@@ -19,6 +19,9 @@ extern const size_t matmul_variants_count;
 const struct matmul_variant *matmul_find(const char *name);
 
 void matmul_naive(size_t n, const float *a, const float *b, float *c);
+void matmul_transposed(size_t n, const float *a, const float *b, float *c);
+void matmul_blocked(size_t n, const float *a, const float *b, float *c);
+void matmul_strassen(size_t n, const float *a, const float *b, float *c);
 
 #define MATRIX_ALIGN 64
 

@@ -4,6 +4,9 @@
 
 const struct matmul_variant matmul_variants[] = {
     {"naive", matmul_naive},
+    {"transposed", matmul_transposed},
+    {"blocked", matmul_blocked},
+    {"strassen", matmul_strassen},
 };
 
 const size_t matmul_variants_count =

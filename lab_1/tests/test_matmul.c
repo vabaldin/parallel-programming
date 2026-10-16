@@ -6,7 +6,7 @@
 
 #define REL_TOL 1e-3f
 
-static const size_t sizes[] = {1, 2, 7, 16, 64, 100, 128, 256};
+static const size_t sizes[] = {1, 2, 7, 16, 64, 100, 128, 256, 300, 513};
 #define NSIZES (sizeof(sizes) / sizeof(sizes[0]))
 
 static int check(const struct matmul_variant *v) {
