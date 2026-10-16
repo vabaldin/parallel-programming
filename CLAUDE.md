@@ -36,7 +36,7 @@ OMP_NUM_THREADS=4 ./build/lab_1/bench -v <variant>
 
 ## Target machine
 
-Apple M3 Pro, **arm64** (6 performance and 5 efficiency cores, 64 KiB L1d, 4 MiB L2 per cluster). The manuals' SIMD examples use x86 SSE/AVX (`<x86intrin.h>`), which does not compile here. Use NEON instead (`<arm_neon.h>`, 128-bit `float32x4_t`, for example `vfmaq_f32` and `vaddvq_f32`). Because the performance and efficiency cores differ, speedup does not grow linearly with thread count. Always report the thread count with results.
+Apple M3 Pro, **arm64** (5 performance cores with 128 KiB L1d and a shared 16 MiB L2, 6 efficiency cores with 64 KiB L1d and a shared 4 MiB L2, 18 GiB RAM). The manuals' SIMD examples use x86 SSE/AVX (`<x86intrin.h>`), which does not compile here. Use NEON instead (`<arm_neon.h>`, 128-bit `float32x4_t`, for example `vfmaq_f32` and `vaddvq_f32`). Because the performance and efficiency cores differ, speedup does not grow linearly with thread count. Always report the thread count with results.
 
 ## Lab 1: matrix multiplication (`lab_1/`)
 
