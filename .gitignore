@@ -1,0 +1,5 @@
+build*/
+.cache/
+*.csv
+.DS_Store
+*.pdf
