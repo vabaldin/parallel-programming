@@ -1,0 +1,8 @@
+build*/
+.cache/
+*.csv
+.DS_Store
+*.pdf
+compile_commands.json
+.venv/
+!lab_*/results/*.csv
