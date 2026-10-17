@@ -16,10 +16,14 @@ the steps of the assignment, timed for n = 64, 128, ..., 4096.
 | `simd_omp` | 5 + 6 | `simd` with OpenMP over 64 x 192 tiles of C (`schedule(dynamic, 1)`) |
 | `best` | all | `simd_omp`; one thread below n = 256; one Strassen level on top for n >= 4096 |
 
-Code: `src/naive.c`, `src/transposed.c`, `src/blocked.c` (`blocked` and
-`blocked_omp`), `src/strassen.c`, `src/simd.c` (`simd` and `simd_omp`),
-`src/best.c`. The kernels behind the variants take row strides, so Strassen can
-call them on quadrants without copying (`src/gemm.h`).
+Code (C++20): `src/naive.cpp`, `src/transposed.cpp`, `src/blocked.cpp`
+(`blocked` and `blocked_omp`), `src/strassen.cpp`, `src/simd.cpp` (`simd` and
+`simd_omp`), `src/best.cpp`. The kernels behind the variants take row strides,
+so Strassen can call them on quadrants without copying (`src/gemm.hpp`). All
+memory is owned by RAII objects: `matmul::Buffer` (an aligned array freed by
+`std::unique_ptr`) and `matmul::Matrix`. Scratch memory such as transposed B,
+packed panels and Strassen temporaries is a local `Buffer`, so it is released
+on every exit path.
 
 ### Blocking (step 3)
 
@@ -123,14 +127,19 @@ only use memory bandwidth, cost more than that.
   shared 4 MiB L2), 128-byte cache lines, 18 GiB RAM, macOS 26.4.1. The data
   below were measured on AC power with nothing else running.
 - Compiler: Homebrew clang 20.1.8 with Homebrew libomp, CMake Release build:
-  `-O3 -DNDEBUG -std=gnu17 -march=native -Wall -Wextra -fopenmp=libomp`.
-  `naive.c`, `transposed.c` and `blocked.c` are also built with
+  `-O3 -DNDEBUG -std=c++20 -march=native -Wall -Wextra -fopenmp=libomp`.
+  `naive.cpp`, `transposed.cpp` and `blocked.cpp` are also built with
   `-fno-vectorize -fno-slp-vectorize`, so that steps 1 to 4 stay scalar and the
   SIMD step shows its own effect. Without that flag the compiler would
   vectorize the `k, j` loop of `blocked` by itself.
 - These three files also get `-falign-loops=64`. Without it, `blocked_omp` on one
   thread was twice as slow as `blocked`, although both inline the same inner
   loop: in the OpenMP copy the 6-instruction loop body crossed a 64-byte boundary.
+- The tables and plots were measured with the first version of the code,
+  written in C17. The C++20 rewrite keeps the same kernels and loop order;
+  spot checks (naive, transposed, blocked, strassen, blocked_omp and simd
+  on one thread at 1024, simd at 2048, and the parallel variants at 1024,
+  2048 and 4096 with 11 threads) agree with the tables within 4%.
 - Inputs are random values in [0, 1). Every call allocates its own scratch
   memory (transposed B, packed panels, Strassen temporaries), so that cost is
   included in the time.

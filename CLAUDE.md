@@ -21,7 +21,7 @@ Plots are built in a Jupyter notebook per lab (`lab_N/plots.ipynb`). The noteboo
 
 ## Build and test
 
-C17, CMake 3.20 or newer, one top-level project; each lab is an `add_subdirectory`.
+C++20 (`lab_1`) and C17 (`lab_2`), CMake 3.20 or newer, one top-level project; each lab is an `add_subdirectory`. C++ code manages every resource with RAII (owning types such as `std::unique_ptr`, `std::vector` and the labs' own buffer classes); no manual `malloc`/`free` or `new`/`delete` pairs.
 
 ```sh
 cmake -S . -B build                    # Release and -march=native by default
@@ -32,7 +32,7 @@ ctest --test-dir build --output-on-failure
 OMP_NUM_THREADS=4 ./build/lab_1/bench -v <variant>
 ```
 
-CI (`.github/workflows/build-test.yml`) runs on a macOS arm64 runner on every PR and on pushes to `master`. It configures with `-DCMAKE_C_FLAGS=-Werror`, builds, and runs ctest, so new code must compile without warnings and every new test must be registered with ctest. MPI tests run with oversubscription enabled because the runner has few cores.
+CI (`.github/workflows/build-test.yml`) runs on a macOS arm64 runner on every PR and on pushes to `master`. It configures with `-DPP_WERROR=ON` (adds `-Werror`), builds, and runs ctest, so new code must compile without warnings and every new test must be registered with ctest. MPI tests run with oversubscription enabled because the runner has few cores.
 
 `-DPP_NATIVE=OFF` disables `-march=native`. OpenMP is required. On macOS the top-level CMakeLists finds Homebrew's keg-only `libomp` via `brew --prefix libomp` (override with `-DOpenMP_ROOT=...`).
 
@@ -53,10 +53,10 @@ Assignment: implement square matrix multiplication in several versions, check th
 Deliverable: a combined fastest version (target size 2048 or 4096), time vs size plots for every step, and speedup and efficiency plots (S = T1/Tp, E = S/p) for the parallel versions.
 
 Structure:
-- `include/matmul.h` defines the variant contract: `void fn(size_t n, const float *a, const float *b, float *c)` on row-major n x n floats. A variant must not modify A or B, must overwrite every element of C, and must handle **any n** (pad internally if the algorithm needs 2^k). Scratch buffers such as transposes and Strassen temporaries are allocated inside the variant so their cost is included in the timing.
-- `src/variants.c` holds the registry. To add a variant, create `src/<name>.c`, declare it in `matmul.h`, add an entry to `matmul_variants[]`, and list the file in `lab_1/CMakeLists.txt`. The bench and tests then pick it up automatically. Entry 0 (`naive`) is the reference result for the tests.
-- `tests/test_matmul.c` checks every variant. All-ones inputs must give exactly `n`. Random inputs in [0, 1) must match the reference within a relative tolerance of 1e-3. The test sizes include values that are not powers of two.
-- `bench/bench.c` prints CSV to stdout: `variant,n,threads,reps,min_s,mean_s,gflops`. Timing uses `omp_get_wtime()`. CSV files are gitignored except `lab_*/results/*.csv`.
+- `include/matmul.hpp` (namespace `matmul`) defines the RAII types `Buffer` (aligned float array) and `Matrix`, and the variant contract: `void fn(std::size_t n, const float *a, const float *b, float *c)` on row-major n x n floats. A variant must not modify A or B, must overwrite every element of C, and must handle **any n** (pad internally if the algorithm needs 2^k). Scratch buffers such as transposes and Strassen temporaries are allocated inside the variant so their cost is included in the timing.
+- `src/variants.cpp` holds the registry. To add a variant, create `src/<name>.cpp`, declare it in `matmul.hpp`, add an entry to `kVariants`, and list the file in `lab_1/CMakeLists.txt`. The bench and tests then pick it up automatically. Entry 0 (`naive`) is the reference result for the tests.
+- `tests/test_matmul.cpp` checks every variant. All-ones inputs must give exactly `n`. Random inputs in [0, 1) must match the reference within a relative tolerance of 1e-3. The test sizes include values that are not powers of two.
+- `bench/bench.cpp` prints CSV to stdout: `variant,n,threads,reps,min_s,mean_s,gflops`. Timing uses `omp_get_wtime()`. CSV files are gitignored except `lab_*/results/*.csv`.
 - Variants, in registry order: `naive`, `transposed`, `blocked` (64 x 64 tiles), `strassen` (cutoff 64 on top of the blocked kernel), `blocked_omp`, `simd` (packed NEON 8 x 12 micro-kernel), `simd_omp`, `best` (`simd_omp`, serial below n = 256, one Strassen level on top for n >= 4096). `naive.c`, `transposed.c` and `blocked.c` are built with auto-vectorization disabled so that the SIMD step stays separate, and with `-falign-loops=64` (otherwise one copy of the blocked inner loop ran twice as slow). The internal kernels with row strides (`gemm_blocked`, `gemm_neon`, `gemm_neon_omp`, `strassen_mul`) are declared in `src/gemm.h`.
 - Results: `results/sizes.csv` (every variant; serial ones run with `OMP_NUM_THREADS=1`, parallel ones with 11 threads) and `results/scaling.csv` (parallel variants with 1 to 11 threads) hold the raw bench output of several runs. `plots.ipynb` takes the minimum time per configuration and writes the PNGs into `results/`; re-run it with `.venv/bin/jupyter nbconvert --to notebook --execute --inplace lab_1/plots.ipynb`. `README.md` is the report.
 
