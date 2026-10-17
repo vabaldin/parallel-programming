@@ -12,6 +12,10 @@ using GemmFn = void (*)(std::size_t n, const float* a, std::size_t lda,
 
 void GemmBlocked(std::size_t n, const float* a, std::size_t lda, const float* b,
                  std::size_t ldb, float* c, std::size_t ldc);
+void GemmNeon(std::size_t n, const float* a, std::size_t lda, const float* b,
+              std::size_t ldb, float* c, std::size_t ldc);
+void GemmNeonOmp(std::size_t n, const float* a, std::size_t lda, const float* b,
+                 std::size_t ldb, float* c, std::size_t ldc);
 
 // Recurses until the size is at most cutoff, then calls base. Sizes that do
 // not split evenly down to the cutoff are zero-padded. With parallel set,

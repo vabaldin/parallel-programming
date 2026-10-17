@@ -45,4 +45,14 @@ void Blocked(std::size_t n, const float* a, const float* b, float* c) {
   GemmBlocked(n, a, n, b, n, c, n);
 }
 
+// Each thread owns whole block rows of C, so threads share a cache line of C
+// only at the boundary of two block rows.
+void BlockedOmp(std::size_t n, const float* a, const float* b, float* c) {
+  std::size_t nblocks = (n + kBlock - 1) / kBlock;
+#pragma omp parallel for schedule(dynamic, 1)
+  for (std::size_t bi = 0; bi < nblocks; ++bi) {
+    BlockRow(n, bi * kBlock, a, n, b, n, c, n);
+  }
+}
+
 }  // namespace matmul

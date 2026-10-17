@@ -86,6 +86,10 @@ void Naive(std::size_t n, const float* a, const float* b, float* c);
 void Transposed(std::size_t n, const float* a, const float* b, float* c);
 void Blocked(std::size_t n, const float* a, const float* b, float* c);
 void Strassen(std::size_t n, const float* a, const float* b, float* c);
+void BlockedOmp(std::size_t n, const float* a, const float* b, float* c);
+void Simd(std::size_t n, const float* a, const float* b, float* c);
+void SimdOmp(std::size_t n, const float* a, const float* b, float* c);
+void Best(std::size_t n, const float* a, const float* b, float* c);
 
 }  // namespace matmul
 
