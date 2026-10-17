@@ -34,6 +34,8 @@ ctest --test-dir build --output-on-failure
 OMP_NUM_THREADS=4 ./build/lab_1/bench -v <variant>
 ```
 
+CI (`.github/workflows/build-test.yml`) runs on a macOS arm64 runner on every PR and on pushes to `master`. It uses Homebrew `llvm@20`, configures with `-DPP_WERROR=ON` (adds `-Werror`), builds, runs ctest and `scripts/check_style.sh`, so new code must compile without warnings, pass the style check, and every new test must be registered with ctest. MPI tests run with oversubscription enabled because the runner has few cores.
+
 `-DPP_NATIVE=OFF` disables `-march=native`; `-DPP_WERROR=ON` adds `-Werror`. OpenMP is required. On macOS the top-level CMakeLists finds Homebrew's keg-only `libomp` via `brew --prefix libomp` (override with `-DOpenMP_ROOT=...`).
 
 ## Target machine

@@ -1,0 +1,41 @@
+name: build-test
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    # arm64 runner: lab 1 SIMD code uses NEON, like the target M3 Pro.
+    runs-on: macos-15
+    env:
+      OMPI_MCA_rmaps_base_oversubscribe: "1"
+      PRTE_MCA_rmaps_default_mapping_policy: ":oversubscribe"
+    steps:
+      - uses: actions/checkout@v4
+
+      # llvm@20 matches the local toolchain, so clang-format output is the same.
+      - name: Install dependencies
+        run: |
+          brew install llvm@20 libomp open-mpi
+          echo "$(brew --prefix llvm@20)/bin" >> "$GITHUB_PATH"
+          echo "CXX=$(brew --prefix llvm@20)/bin/clang++" >> "$GITHUB_ENV"
+
+      - name: Configure
+        id: configure
+        run: cmake -S . -B build -DPP_WERROR=ON
+
+      - name: Build
+        run: cmake --build build -j "$(sysctl -n hw.ncpu)"
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Style (clang-format, clang-tidy, ASCII)
+        if: always() && steps.configure.outcome == 'success'
+        run: scripts/check_style.sh build
