@@ -6,3 +6,4 @@ build*/
 compile_commands.json
 .venv/
 !lab_*/results/*.csv
+.claude/worktrees/
