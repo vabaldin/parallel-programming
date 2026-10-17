@@ -83,6 +83,9 @@ std::span<const Variant> Variants() noexcept;
 const Variant* Find(std::string_view name) noexcept;
 
 void Naive(std::size_t n, const float* a, const float* b, float* c);
+void Transposed(std::size_t n, const float* a, const float* b, float* c);
+void Blocked(std::size_t n, const float* a, const float* b, float* c);
+void Strassen(std::size_t n, const float* a, const float* b, float* c);
 
 }  // namespace matmul
 

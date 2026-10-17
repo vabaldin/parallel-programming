@@ -9,6 +9,9 @@ namespace {
 
 constexpr std::array kVariants{
     Variant{"naive", Naive},
+    Variant{"transposed", Transposed},
+    Variant{"blocked", Blocked},
+    Variant{"strassen", Strassen},
 };
 
 }  // namespace
