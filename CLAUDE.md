@@ -17,9 +17,9 @@ Plots are built in a Jupyter notebook per lab (`lab_N/plots.ipynb`). The noteboo
 ## Code style
 
 - [Google C++ style](https://google.github.io/styleguide/cppguide.html), formatting and naming included: `.cc`/`.h` files, `#define` header guards (`LAB_1_INCLUDE_MATMUL_H_`), `CamelCase` types and functions, `snake_case` variables and parameters, `member_` for private class members, `kName` constants, `UPPER_CASE` macros, `<cstdint>` types instead of `long`/`long long`. Simple accessors (`data`, `size`, `get`, `n`, `ni`, `nj`) keep variable-style names, as the guide allows.
-- `.clang-format` (`BasedOnStyle: Google`) and `.clang-tidy` (`google-*` and `readability-identifier-naming`, warnings are errors) enforce it. Check locally with `scripts/check_style.sh build` after configuring (it also rejects non-ASCII text); fix formatting with `git ls-files '*.cc' '*.h' | xargs clang-format -i`. Use the clang-format and clang-tidy from Homebrew `llvm@20`, the same version as CI.
+- `.clang-format` (`BasedOnStyle: Google`) and `.clang-tidy` (`google-*` and `readability-identifier-naming`, warnings are errors) enforce it. Check locally with `scripts/check_style.sh build` after configuring (it also rejects non-ASCII text outside the reports); fix formatting with `git ls-files '*.cc' '*.h' | xargs clang-format -i`. Use the clang-format and clang-tidy from Homebrew `llvm@20`, the same version as CI.
 - Comments are rare and written in English. Comment only what the code cannot say itself.
-- ASCII only in all files: no Unicode punctuation, arrows, math symbols or Cyrillic.
+- ASCII only in all files: no Unicode punctuation, arrows, math symbols or Cyrillic. The exception are the lab reports, `lab_N/README.md` and `lab_N/plots.ipynb` (markdown, plot titles and labels): they are written in Russian, briefly and to the point, because they are submitted as the report.
 
 ## Build and test
 

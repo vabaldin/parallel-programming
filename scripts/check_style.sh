@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Usage: scripts/check_style.sh [build-dir]
 # Checks formatting (clang-format), Google style and naming (clang-tidy) and
-# that text files are ASCII only. clang-tidy reads compile_commands.json from
-# the build directory, so configure with CMake first.
+# that text files are ASCII only (the Russian lab reports are exempt).
+# clang-tidy reads compile_commands.json from the build directory, so
+# configure with CMake first.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -23,7 +24,8 @@ git ls-files -z '*.cc' |
     clang-tidy -p "$build" --quiet ${sysroot[@]+"${sysroot[@]}"} \
     2>/dev/null || status=1
 
-if git ls-files -z -- ':!*.pdf' ':!*.png' |
+if git ls-files -z -- ':!*.pdf' ':!*.png' ':!lab_*/README.md' \
+  ':!lab_*/plots.ipynb' |
   xargs -0 perl -ne 'if (/[^\x00-\x7F]/) { print "$ARGV:$.: non-ASCII\n"; $f = 1 }
                      close ARGV if eof; END { exit $f }'; then :; else status=1; fi
 
