@@ -12,14 +12,14 @@ Never commit to `master`. For every task: create a new branch, commit, `git push
 
 ## Plots
 
-Plots are built in a Jupyter notebook per lab (`lab_N/plots.ipynb`). The notebook reads `lab_N/results/*.csv`, also saves PNGs there for the README, and is committed with its outputs. Use the repo-root venv: `python3 -m venv .venv && .venv/bin/pip install jupyter matplotlib pandas`. Re-run with `.venv/bin/jupyter nbconvert --to notebook --execute --inplace lab_N/plots.ipynb`.
+Plots are built in a Jupyter notebook per lab (`lab_N/plots.ipynb`). The notebook reads `lab_N/results/*.csv`, also saves PNGs there for the README, and is committed with its outputs. Measured points are never joined by polylines: each point (the minimum time) gets an error bar (up to the mean over repetitions), and the curve is a smoothing spline (`scipy.interpolate.make_smoothing_spline`, `lam=0.01`) of the time in log coordinates; speedup, efficiency and GFLOPS curves are derived from that time spline. Use the repo-root venv: `python3 -m venv .venv && .venv/bin/pip install jupyter matplotlib pandas scipy`. Re-run with `.venv/bin/jupyter nbconvert --to notebook --execute --inplace lab_N/plots.ipynb`.
 
 ## Code style
 
 - [Google C++ style](https://google.github.io/styleguide/cppguide.html), formatting and naming included: `.cc`/`.h` files, `#define` header guards (`LAB_1_INCLUDE_MATMUL_H_`), `CamelCase` types and functions, `snake_case` variables and parameters, `member_` for private class members, `kName` constants, `UPPER_CASE` macros, `<cstdint>` types instead of `long`/`long long`. Simple accessors (`data`, `size`, `get`, `n`, `ni`, `nj`) keep variable-style names, as the guide allows.
-- `.clang-format` (`BasedOnStyle: Google`) and `.clang-tidy` (`google-*` and `readability-identifier-naming`, warnings are errors) enforce it. Check locally with `scripts/check_style.sh build` after configuring (it also rejects non-ASCII text); fix formatting with `git ls-files '*.cc' '*.h' | xargs clang-format -i`. Use the clang-format and clang-tidy from Homebrew `llvm@20`, the same version as CI.
+- `.clang-format` (`BasedOnStyle: Google`) and `.clang-tidy` (`google-*` and `readability-identifier-naming`, warnings are errors) enforce it. Check locally with `scripts/check_style.sh build` after configuring (it also rejects non-ASCII text outside the reports); fix formatting with `git ls-files '*.cc' '*.h' | xargs clang-format -i`. Use the clang-format and clang-tidy from Homebrew `llvm@20`, the same version as CI.
 - Comments are rare and written in English. Comment only what the code cannot say itself.
-- ASCII only in all files: no Unicode punctuation, arrows, math symbols or Cyrillic.
+- ASCII only in all files: no Unicode punctuation, arrows, math symbols or Cyrillic. The exception are the lab reports, `lab_N/README.md` and `lab_N/plots.ipynb` (markdown, plot titles and labels): they are written in Russian, briefly and to the point, because they are submitted as the report.
 
 ## Build and test
 
@@ -62,4 +62,22 @@ Structure:
 
 ## Lab 2: loop parallelization (`lab_2/`)
 
-Not started. The manual covers MPI (distributed memory: `mpicc`, `mpirun -np`, point-to-point send and receive, `MPI_Wtime`), OpenMP for parallelizing loops with data dependencies, Amdahl's law, and speedup and efficiency. Open MPI is installed via Homebrew (`mpicc` is on PATH).
+Assignment: for the manual's reference loop (`a[i][j] = sin(2*a[i][j])`) and the individual variants **1b**, **2b** and **3b** (Latin "b" everywhere; the manual writes the Cyrillic letter), compute the distance and direction vectors and the dependence type, write a sequential version and a parallel version, check that both write identical result files (`"%f "` per element, one row per line), and measure time, speedup and efficiency against the number of workers. The reference loop must be parallelized with both OpenMP and MPI; the variants use the technology the manual names: 1b `a[i][j] = sin(5*a[i-2][j+3])` with MPI, 2b `a[i][j] = sin(0.2*a[i+1][j-6])` with OpenMP, 3b (`a = sin(0.01*a)`, then `b[i][j] = a[i+1][j-3]*2`) with OpenMP. Only the loop nest is timed (not the initialization or the file output). Full grade needs ISIZE = JSIZE = 5000, which needs heap allocation. `lab_2/README.md` holds the analysis, results and answers to the control questions.
+
+Structure:
+- `include/loops.h` (namespace `loops`) has the RAII grid type `Grid` (aligned, deliberately uninitialized so that MPI ranks map only what they touch) and the loop bodies as `inline` row functions shared by all implementations, so results match bit for bit (the tests compare bits, not a tolerance). `src/seq.cc` has the sequential versions and the `SeqVariants()` registry. `src/run_mpi.cc` wraps the MPI session and derived datatypes in RAII classes.
+- Three programs with the same options (`-v variant -n ISIZE -m JSIZE -r reps -t threads -o file -c -H`): `lab2_seq` (ref, 1b, 2b, 3b), `lab2_omp` (ref, 2b, 2b-cols, 3b), `lab2_mpi` (ref, 1b). `-c` compares the result with the sequential version in-process, `-o` writes the result file. Each prints one CSV row: `variant,impl,isize,jsize,workers,reps,min_s,mean_s,comp_s` (`comp_s` is MPI time without collecting the result on rank 0).
+- ctest runs `-c` for several worker counts and sizes and `tests/compare_files.cmake` (sequential vs parallel result files, as the manual prescribes).
+- `scripts/bench.sh [variant...]` writes `lab_2/results/<variant>.csv` (sizes 1000 and 5000, workers 1 2 4 6 8 11). Set `LOCK=<cmd>` to wrap each run in a lock on a shared machine. `plots.ipynb` reads the CSVs and saves `results/<variant>.png`; it is committed with outputs.
+
+```sh
+ctest --test-dir build -R lab_2 --output-on-failure
+./build/lab_2/lab2_omp -v 2b -t 6 -c
+mpirun -np 4 ./build/lab_2/lab2_mpi -v 1b -n 1000 -m 1000 -o par.txt
+./build/lab_2/lab2_seq -v 1b -n 1000 -m 1000 -o seq.txt && cmp seq.txt par.txt
+lab_2/scripts/bench.sh 1b
+.venv/bin/pip install jupyter matplotlib pandas scipy   # venv at the repo root, shared
+.venv/bin/jupyter nbconvert --to notebook --execute --inplace lab_2/plots.ipynb
+```
+
+MPI: Open MPI 5 from Homebrew, found with `find_package(MPI)`; tests launch through `${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} N`. Locally `mpirun` needs no network or host options. It allows as many processes as cores (11); more need `--oversubscribe`. Every rank allocates the whole grid but touches only its own part, because 11 fully initialized 200 MB copies push the machine into swap and ruin the timings. `sysctl hw.perflevel0.physicalcpu hw.perflevel1.physicalcpu` reports 5 performance and 6 efficiency cores, so static equal splits wait for the slow cores above 5 workers; the OpenMP versions use dynamic scheduling.
