@@ -8,7 +8,8 @@
 namespace {
 
 constexpr float kRelTol = 1e-3f;
-constexpr std::array<std::size_t, 8> kSizes{1, 2, 7, 16, 64, 100, 128, 256};
+constexpr std::array<std::size_t, 10> kSizes{1,   2,   7,   16,  64,
+                                             100, 128, 256, 300, 513};
 
 int Check(const matmul::Variant& v) {
   const matmul::Variant& ref = matmul::Variants().front();

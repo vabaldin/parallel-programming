@@ -1,7 +1,7 @@
 ---
 # Google C++ style: the google-* checks plus the naming rules of
 # https://google.github.io/styleguide/cppguide.html#Naming
-Checks: '-*,google-*,readability-identifier-naming'
+Checks: '-*,google-*,readability-identifier-naming,cppcoreguidelines-macro-usage'
 WarningsAsErrors: '*'
 HeaderFilterRegex: '.*/lab_[0-9]+/.*'
 CheckOptions:
