@@ -12,7 +12,7 @@ Never commit to `master`. For every task: create a new branch, commit, `git push
 
 ## Plots
 
-Plots are built in a Jupyter notebook per lab (`lab_N/plots.ipynb`). The notebook reads `lab_N/results/*.csv`, also saves PNGs there for the README, and is committed with its outputs. Use the repo-root venv: `python3 -m venv .venv && .venv/bin/pip install jupyter matplotlib pandas`. Re-run with `.venv/bin/jupyter nbconvert --to notebook --execute --inplace lab_N/plots.ipynb`.
+Plots are built in a Jupyter notebook per lab (`lab_N/plots.ipynb`). The notebook reads `lab_N/results/*.csv`, also saves PNGs there for the README, and is committed with its outputs. Measured points are never joined by polylines: each point (the minimum time) gets an error bar (up to the mean over repetitions), and the curve is a smoothing spline (`scipy.interpolate.make_smoothing_spline`, `lam=0.01`) of the time in log coordinates; speedup, efficiency and GFLOPS curves are derived from that time spline. Use the repo-root venv: `python3 -m venv .venv && .venv/bin/pip install jupyter matplotlib pandas scipy`. Re-run with `.venv/bin/jupyter nbconvert --to notebook --execute --inplace lab_N/plots.ipynb`.
 
 ## Code style
 
@@ -76,7 +76,7 @@ ctest --test-dir build -R lab_2 --output-on-failure
 mpirun -np 4 ./build/lab_2/lab2_mpi -v 1b -n 1000 -m 1000 -o par.txt
 ./build/lab_2/lab2_seq -v 1b -n 1000 -m 1000 -o seq.txt && cmp seq.txt par.txt
 lab_2/scripts/bench.sh 1b
-.venv/bin/pip install jupyter matplotlib pandas   # venv at the repo root, shared
+.venv/bin/pip install jupyter matplotlib pandas scipy   # venv at the repo root, shared
 .venv/bin/jupyter nbconvert --to notebook --execute --inplace lab_2/plots.ipynb
 ```
 
